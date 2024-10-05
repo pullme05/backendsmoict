@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const User = require('./models/User'); // นำเข้าโมเดล User
-const NewsRoutes = require('./Routes/News'); // นำเข้า News routes
+
 
 
 const app = express();
@@ -101,8 +101,7 @@ app.post('/createAdmin', async (req, res) => {
   }
 });
 
-// เพิ่ม routing สำหรับข่าวสาร
-app.use('/api/news', NewsRoutes); 
+ 
 // เพิ่ม routing สำหรับ ปฎิทินกิจกรรม
 const EventRoutes = require('./Routes/Event');
 app.use('/api/events', EventRoutes); 
