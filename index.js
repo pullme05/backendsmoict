@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const User = require('./models/User'); // นำเข้าโมเดล User
-
-
+const authMiddleware = require('./authMiddleware');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const cors = require('cors');
@@ -46,6 +46,10 @@ app.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
     }
 
+    // สร้าง JWT token
+    const token = jwt.sign({ userId: user._id }, 'your_secret_key', { expiresIn: '1h' });
+
+    // ส่งข้อมูลผู้ใช้และ token กลับไป
     res.status(200).json({
       message: 'Login successful',
       user: {
@@ -53,8 +57,9 @@ app.post('/login', async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         studentID: user.studentID,
-        role: user.role // ส่ง role กลับไปด้วย
-      }
+        role: user.role
+      },
+      token // ส่ง token กลับไปด้วย
     });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -113,6 +118,30 @@ app.use('/api/events', EventRoutes);
 // เพิ่ม routing สำหรับ การจองห้อง
 const bookingRoutes = require('./Routes/bookingRoutes');
 app.use('/api/bookings', bookingRoutes);
+
+// Routes
+const memberRoutes = require('./Routes/memberRoutes');
+app.use('/api/members', memberRoutes);
+
+app.use('/uploads', express.static('uploads'));
+
+// เพิ่ม route สำหรับดึงข้อมูลผู้ใช้ที่ล็อกอิน
+app.get('/api/user', authMiddleware, (req, res) => {
+  const { firstName, lastName, studentID } = req.user;
+  
+  // ตรวจสอบว่าข้อมูลถูกต้องหรือไม่
+  if (!firstName || !lastName || !studentID) {
+    return res.status(400).json({ message: 'User data is incomplete' });
+  }
+
+  res.status(200).json({
+    firstName,
+    lastName,
+    studentID
+  });
+});
+
+
 
 
 // เริ่มฟังที่พอร์ตที่กำหนด
