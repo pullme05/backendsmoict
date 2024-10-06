@@ -24,7 +24,8 @@ const connectDB = async () => {
 connectDB();
 
 // ใช้ middleware สำหรับแปลงข้อมูล request body เป็น JSON
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ limit: '1mb', extended: true }));
 app.use(cors({
   origin: 'http://localhost:5173' // เปลี่ยนเป็นโดเมนของคุณ
 }));
@@ -101,7 +102,10 @@ app.post('/createAdmin', async (req, res) => {
   }
 });
 
- 
+// เพิ่ม routing สำหรับ ข่าวสาร
+const newssRoutes = require('./Routes/NewssRoutes');
+app.use('/api/news', newssRoutes);
+
 // เพิ่ม routing สำหรับ ปฎิทินกิจกรรม
 const EventRoutes = require('./Routes/Event');
 app.use('/api/events', EventRoutes); 
