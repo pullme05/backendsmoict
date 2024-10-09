@@ -107,6 +107,47 @@ app.post('/createAdmin', async (req, res) => {
   }
 });
 
+// สร้าง Schema สำหรับเก็บข้อมูลคีย์
+const qrCodeSchema = new mongoose.Schema({
+  key: { type: String, required: true, unique: true }, // คีย์ต้องไม่ซ้ำกัน
+  used: { type: Boolean, default: false }, // ใช้ในการตรวจสอบว่าคีย์ถูกใช้หรือยัง
+  timestamp: { type: Date, default: Date.now },
+});
+// สร้าง Model จาก Schema
+const QRCode = mongoose.model('QRCode', qrCodeSchema);
+
+// Endpoint สำหรับยืนยันคีย์
+app.post('/api/verify-key', async (req, res) => {
+  const { key } = req.body; // รับคีย์จาก request body
+
+  try {
+    // ค้นหาคีย์ในฐานข้อมูล
+    const qrCode = await QRCode.findOne({ key });
+
+    if (!qrCode) {
+      // ถ้าคีย์ไม่พบในฐานข้อมูล
+      return res.status(404).json({ message: 'Key not found.' });
+    }
+
+    if (qrCode.used) {
+      // ถ้าคีย์ถูกใช้ไปแล้ว
+      return res.status(400).json({ message: 'Key has already been used.' });
+    }
+
+    // ถ้าคีย์ยังไม่ถูกใช้
+    qrCode.used = true; // อัปเดตสถานะว่าใช้คีย์แล้ว
+    await qrCode.save(); // บันทึกข้อมูลในฐานข้อมูล
+
+    return res.status(200).json({ message: 'Key is valid and marked as used.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+
+
+
 // เพิ่ม routing สำหรับ ข่าวสาร
 const newssRoutes = require('./Routes/NewssRoutes');
 app.use('/api/news', newssRoutes);
