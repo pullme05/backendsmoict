@@ -15,6 +15,10 @@ const bookingSchema = new mongoose.Schema({
     minlength: 8,
     maxlength: 8,
   },
+  phoneNumber: { 
+    type: String, 
+    required: true // เพิ่ม phoneNumber ให้เป็น required
+  },
   startTime: {
     type: String,
     required: true,
