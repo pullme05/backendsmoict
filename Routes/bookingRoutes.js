@@ -85,11 +85,11 @@ router.delete('/delete/:studentID', async (req, res) => {
 
 
 // อนุมัติการจอง
-router.post('/approve/:id', async (req, res) => {
-  const { id } = req.params;
+router.post('/approve/:studentID', async (req, res) => {
+  const { studentID } = req.params;
 
   try {
-    const booking = await Booking.findById(id);
+    const booking = await Booking.findOne({ studentID });
 
     if (!booking) {
       return res.status(404).json({ message: 'ไม่พบข้อมูลการจองนี้' });
@@ -97,6 +97,8 @@ router.post('/approve/:id', async (req, res) => {
 
     booking.status = 'อนุมัติแล้ว';
     await booking.save();
+    
+    console.log('Booking updated:', booking); // ตรวจสอบว่าการอัปเดตถูกบันทึกในฐานข้อมูลหรือไม่
 
     res.status(200).json({ message: 'อนุมัติการจองสำเร็จ', booking });
   } catch (error) {
