@@ -40,12 +40,6 @@ const bookingSchema = new mongoose.Schema({
     enum: ['รอการอนุมัติจากผู้ดูแล', 'อนุมัติแล้ว', 'ถูกปฏิเสธ'],
     default: 'รอการอนุมัติจากผู้ดูแล',
   },
-  rejectionReason: {
-    type: String,
-    required: function() {
-      return this.status === 'ถูกปฏิเสธ';
-    },
-  },
 });
 
 module.exports = mongoose.model('Booking', bookingSchema);

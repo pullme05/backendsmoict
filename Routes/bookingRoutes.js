@@ -105,28 +105,35 @@ router.post('/approve/:studentID', async (req, res) => {
   }
 });
 
-// ปฏิเสธการจอง
+// ปฏิเสธการจอง (ไม่ต้องการ reason)
 router.post('/reject/:studentID', async (req, res) => {
   const { studentID } = req.params;
-  const { reason } = req.body;
 
   try {
+    // ตรวจสอบว่าค่าของ studentID ส่งมาถูกต้องหรือไม่
+    console.log('Rejecting booking for studentID:', studentID);
+
+    // ค้นหาการจองจาก studentID
     const booking = await Booking.findOne({ studentID });
 
+    // ถ้าไม่พบการจอง
     if (!booking) {
       return res.status(404).json({ message: 'ไม่พบข้อมูลการจองนี้' });
     }
 
+    // อัปเดตสถานะเป็น 'ถูกปฏิเสธ'
     booking.status = 'ถูกปฏิเสธ';
-    booking.rejectionReason = reason;
     await booking.save();
 
+    // ส่งผลลัพธ์กลับ
     res.status(200).json({ message: 'ปฏิเสธการจองสำเร็จ', booking });
   } catch (error) {
     console.error('Error rejecting booking:', error);
-    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการปฏิเสธการจอง' });
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการปฏิเสธการจอง', error: error.message });
   }
 });
+
+
 
 
 // ดึงการจองที่สถานะ 'อนุมัติแล้ว'
