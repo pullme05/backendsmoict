@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Booking = require('../models/Booking');
 const mongoose = require('mongoose');
-
+const { ObjectID } = require('mongodb');
 // สร้างการจอง
 router.post('/create', async (req, res) => {
   const { room, studentName, studentID, phoneNumber, startTime, endTime, purpose, date } = req.body; // เพิ่ม phoneNumber เข้ามาใน request body
@@ -133,7 +133,37 @@ router.post('/reject/:studentID', async (req, res) => {
   }
 });
 
+// PUT endpoint สำหรับการแก้ไขข้อมูลการจองโดยใช้ studentID
+router.put('/bookings/update/:studentID', async (req, res) => {
+  const studentID = req.params.studentID;
+  console.log('Student ID from request:', studentID);  // Debugging
 
+  try {
+    // ตรวจสอบว่า studentID ถูกส่งมาหรือไม่
+    if (!studentID) {
+      return res.status(400).json({ message: 'Student ID ที่ส่งมาไม่ถูกต้อง' });
+    }
+
+    // ตรวจสอบว่า studentID มีอยู่จริงในฐานข้อมูลหรือไม่ (กรณีที่เป็น string)
+    const booking = await Booking.findOneAndUpdate(
+      { studentID: studentID.toString() },  // ค้นหาด้วย studentID โดยเปลี่ยนเป็น string (กรณีฐานข้อมูลเป็น string)
+      req.body,  // ข้อมูลที่ต้องการอัปเดต
+      { new: true, runValidators: true }  // คืนค่าการจองใหม่ที่อัปเดต
+    );
+
+    if (!booking) {
+      return res.status(404).json({ message: 'ไม่พบการจองที่มี Student ID นี้' });
+    }
+
+    res.status(200).json({
+      message: 'แก้ไขการจองสำเร็จ',
+      booking,
+    });
+  } catch (error) {
+    console.error('Error updating booking:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการแก้ไขการจอง' });
+  }
+});
 
 
 // ดึงการจองที่สถานะ 'อนุมัติแล้ว'
