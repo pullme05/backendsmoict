@@ -97,8 +97,6 @@ router.post('/approve/:studentID', async (req, res) => {
 
     booking.status = 'อนุมัติแล้ว';
     await booking.save();
-    
-    console.log('Booking updated:', booking); // ตรวจสอบว่าการอัปเดตถูกบันทึกในฐานข้อมูลหรือไม่
 
     res.status(200).json({ message: 'อนุมัติการจองสำเร็จ', booking });
   } catch (error) {
@@ -108,12 +106,12 @@ router.post('/approve/:studentID', async (req, res) => {
 });
 
 // ปฏิเสธการจอง
-router.post('/reject/:id', async (req, res) => {
-  const { id } = req.params;
+router.post('/reject/:studentID', async (req, res) => {
+  const { studentID } = req.params;
   const { reason } = req.body;
 
   try {
-    const booking = await Booking.findById(id);
+    const booking = await Booking.findOne({ studentID });
 
     if (!booking) {
       return res.status(404).json({ message: 'ไม่พบข้อมูลการจองนี้' });
@@ -129,6 +127,7 @@ router.post('/reject/:id', async (req, res) => {
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในการปฏิเสธการจอง' });
   }
 });
+
 
 // ดึงการจองที่สถานะ 'อนุมัติแล้ว'
 router.get('/approved', async (req, res) => {
