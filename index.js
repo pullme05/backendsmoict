@@ -22,7 +22,6 @@ const connectDB = async () => {
   }
 };
 connectDB();
-
 // ใช้ middleware สำหรับแปลงข้อมูล request body เป็น JSON
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ limit: '1mb', extended: true }));
